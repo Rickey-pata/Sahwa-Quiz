@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>조선의 사화 탈출기: 사화 명칭·내용 짝짓기 & 챌린지 퀴즈</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
+    body { background-color: #f8fafc; color: #1e293b; line-height: 1.5; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; padding: 32px; }
+    header { text-align: center; margin-bottom: 24px; }
+    header h1 { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    header p { font-size: 15px; color: #64748b; }
+    
+    .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; margin-bottom: 24px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #3b82f6; width: 0%; transition: width 0.3s ease; }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Intro screen */
+    .intro-card { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .intro-card h3 { font-size: 16px; color: #1d4ed8; margin-bottom: 8px; font-weight: 600; }
+    .intro-card p { font-size: 14px; color: #334155; margin-bottom: 6px; }
+    
+    .btn { display: block; width: 100%; padding: 14px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; text-align: center; transition: background 0.2s; }
+    .btn:hover { background: #2563eb; }
+    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    /* Matching Game */
+    .match-instruction { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: #334155; text-align: center; }
+    .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .match-column { display: flex; flex-direction: column; gap: 12px; }
+    .match-item { padding: 16px; background: #f1f5f9; border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 500; text-align: center; transition: all 0.2s; min-height: 70px; display: flex; align-items: center; justify-content: center; }
+    .match-item:hover { background: #e2e8f0; }
+    .match-item.selected { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
+    .match-item.matched { background: #dcfce7; border-color: #22c55e; color: #15803d; cursor: default; }
+
+    /* Quiz Screen */
+    .quiz-question { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 20px; }
+    .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .option-btn { padding: 16px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; text-align: left; font-size: 15px; color: #334155; cursor: pointer; transition: all 0.2s; }
+    .option-btn:hover:not(:disabled) { background: #f1f5f9; border-color: #94a3b8; }
+    .option-btn.correct { background: #dcfce7; border-color: #22c55e; color: #15803d; font-weight: 600; }
+    .option-btn.incorrect { background: #fee2e2; border-color: #ef4444; color: #b91c1c; font-weight: 600; }
+
+    /* Explanation Table */
+    .explanation-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-top: 20px; }
+    .explanation-box h4 { font-size: 16px; margin-bottom: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .exp-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+    .exp-table th, .exp-table td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; vertical-align: top; }
+    .exp-table th { background: #f1f5f9; font-weight: 600; width: 22%; }
+    
+    /* Result Screen */
+    .result-score { font-size: 32px; font-weight: 700; color: #3b82f6; text-align: center; margin-bottom: 16px; }
+    .report-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .report-box h3 { color: #991b1b; font-size: 16px; margin-bottom: 10px; font-weight: 600; }
+    .report-box ul { padding-left: 20px; font-size: 14px; color: #7f1d1d; display: flex; flex-direction: column; gap: 6px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>조선의 사화 탈출기 🎮</h1>
+    <p>사화의 명칭과 내용을 완벽히 정복해보세요!</p>
+  </header>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <!-- STAGE 1: INTRO -->
+  <div id="screenIntro" class="screen active">
+    <div class="intro-card">
+      <h3>💡 학습 목표</h3>
+      <p>• 4대 사화(무오, 갑자, 기묘, 을사)의 <strong>명칭과 핵심 내용·원인</strong>을 정확히 설명할 수 있다.</p>
+      <p>• 훈구파와 사림파의 갈등 속에서 일어난 사화별 차이점을 구분할 수 있다.</p>
+    </div>
+    <div class="intro-card" style="background: #fdf4ff; border-color: #f5d0fe;">
+      <h3 style="color: #86198f;">✨ 미션 안내</h3>
+      <p>1단계: 사화 명칭과 핵심 설명 짝짓기 미니게임</p>
+      <p>2단계: 오개념을 타파하는 4지선다 챌린지 퀴즈 (총 4문항)</p>
+    </div>
+    <button class="btn" onclick="startMatchingGame()">짝짓기 게임 시작하기 🚀</button>
+  </div>
+
+  <!-- STAGE 2: MATCHING GAME -->
+  <div id="screenMatching" class="screen">
+    <div class="match-instruction">왼쪽의 '사화 명칭'과 오른쪽의 '올바른 설명'을 차례대로 클릭해 짝을 지어주세요!</div>
+    <div class="match-grid">
+      <div class="match-column" id="matchNames"></div>
+      <div class="match-column" id="matchDescs"></div>
+    </div>
+    <button class="btn" id="matchNextBtn" style="display:none;" onclick="startQuizStage()">챌린지 퀴즈로 넘어가기 ➡️</button>
+  </div>
+
+  <!-- STAGE 3: QUIZ STAGE -->
+  <div id="screenQuiz" class="screen">
+    <div id="quizContainer"></div>
+  </div>
+
+  <!-- STAGE 4: RESULT -->
+  <div id="screenResult" class="screen">
+    <div class="result-score" id="finalScoreDisplay"></div>
+    <div class="report-box">
+      <h3>⚠️ 자주 틀린 오개념 피드백 리포트</h3>
+      <ul id="wrongConceptList"></ul>
+    </div>
+    <button class="btn" onclick="location.reload()">처음부터 다시 도전하기 🔄</button>
+  </div>
+</div>
+
+<script>
+  // Data for Matching Game
+  const matchData = [
+    { id: 1, name: "무오사화", desc: "김종직의 '조의제문' 수록이 화근이 되어 발생" },
+    { id: 2, name: "갑자사화", desc: "연산군 생모 폐비 윤씨 사건 관련자 무자비 처벌" },
+    { id: 3, name: "기묘사화", desc: "조광조의 급격한 개혁 정치에 훈구파 반발로 발생" },
+    { id: 4, name: "을사사화", desc: "왕실 외척 간의 권력 다툼(대윤 vs 소윤)으로 발생" }
+  ];
+
+  // Data for Quizzes
+  const quizData = [
+    {
+      question: "[문항 1] 조선 시대 첫 번째 사화인 '무오사화'가 일어난 직접적인 계기는?",
+      options: [
+        "연산군의 생모 폐비 윤씨 사사 사건에 연루된 신하들을 처벌하기 위해서다.",
+        "조광조가 주도한 소격서 폐지 등 급격한 개혁 정치에 훈구파가 반발했기 때문이다.",
+        "김종직이 세조의 즉위 과정을 비판한 '조의제문'을 사초에 수록했기 때문이다.",
+        "외척 세력 간의 권력 다툼 속에서 명종의 어머니 문정왕후가 수렴청정을 했기 때문이다."
+      ],
+      correct: 2,
+      conceptTag: "무오사화와 갑자사화/기묘사화 내용 혼동",
+      explanation: {
+        선지: "① 연산군 생모 사건 / ② 조광조 개혁 반발 / ③ 김종직 조의제문 수록 / ④ 외척 간 다툼",
+        정오: "① X (갑자사화) / ② X (기묘사화) / ③ O (정답) / ④ X (을사사화)",
+        생각: "연산군 때 일어났거나 사림이 피해를 입었다는 점 때문에 사화의 원인을 서로 뒤섞어 생각하기 쉽습니다.",
+        바로잡기: "무오사화는 김종직의 '조의제문'이 세조의 왕위 찬탈을 비판했다는 훈구파의 고발로 일어났습니다."
+      }
+    },
+    {
+      question: "[문항 2] '갑자사화'에 대한 설명으로 올바른 것은?",
+      options: [
+        "훈구파가 사림파의 세력을 꺾기 위해 사초의 내용을 빌어 일으켰다.",
+        "조광조를 비롯한 사림 세력이 대거 숙청되고 현량과가 폐지되었다.",
+        "연산군이 생모(폐비 윤씨)의 죽음과 관련된 이들을 무자비하게 처벌하였다.",
+        "왕위를 계승하는 과정에서 대윤과 소윤의 권력 다툼으로 발생했다."
+      ],
+      correct: 2,
+      conceptTag: "연산군 대 두 사화(무오·갑자) 구분 혼동",
+      explanation: {
+        선지: "① 사초 내용 빌어 발생 / ② 조광조 숙청·현량과 폐지 / ③ 폐비 윤씨 관련자 처벌 / ④ 대윤·소윤 다툼",
+        정오: "① X (무오사화) / ② X (기묘사화) / ③ O (정답) / ④ X (을사사화)",
+        생각: "연산군 재위기라는 공통점 때문에 무오사화와 갑자사화의 원인을 헷갈리기 쉽습니다.",
+        바로잡기: "갑자사화는 연산군이 생모 폐비 윤씨의 비극적 죽음을 알게 되면서 관련자들을 잔인하게 숙청한 사건입니다."
+      }
+    },
+    {
+      question: "[문항 3] '기묘사화'의 결과로 나타난 역사적 사실로 가장 적절한 것은?",
+      options: [
+        "세조의 왕위 찬탈을 비판하는 글 때문에 사림들이 큰 화를 입었다.",
+        "연산군의 폭정이 심해져 결국 신하들에 의해 왕이 폐위되었다.",
+        "조광조 등 개혁을 주도하던 사림 세력이 대거 숙청되고 위훈개정(공신 삭제)이 좌절되었다.",
+        "소윤 세력이 정권을 잡고 사림 세력을 탄압하였다."
+      ],
+      correct: 2,
+      conceptTag: "기묘사화의 결과 및 조광조 개혁 내용 혼동",
+      explanation: {
+        선지: "① 세조 찬탈 비판 / ② 연산군 폭정 및 폐위 / ③ 조광조 숙청·위훈개정 좌절 / ④ 소윤 정권 장악",
+        정오: "① X (무오사화) / ② X (갑자사화 이후) / ③ O (정답) / ④ X (을사사화)",
+        생각: "사림 세력이 훈구파의 공격으로 피해를 입었다는 점만 기억하면 어떤 사화든 결과가 비슷해 보일 수 있습니다.",
+        바로잡기: "기묘사화는 중종 때 조광조의 급진적 개혁(현량과, 위훈개정 등)에 반발한 훈구파의 모함으로 조광조 등이 숙청된 사건입니다."
+      }
+    },
+    {
+      question: "[문항 4] '을사사화'가 일어난 배경과 관련된 설명으로 가장 적절한 것은?",
+      options: [
+        "김종직의 제자들이 스승의 글을 사초에 올린 것이 화근이 되었다.",
+        "현량과를 통해 진출한 신진 사림들이 훈구파의 특권을 지나치게 비판했다.",
+        "연산군의 어머니 문제로 인해 궁궐 내 대소 신하들이 옥사를 치렀다.",
+        "명종 즉위 직후 왕실 외척 간의 권력 다툼(대윤 대 소윤) 과정에서 사림이 피해를 입었다."
+      ],
+      correct: 3,
+      conceptTag: "사화의 원인(학문적 대립 vs 외척 갈등) 혼동",
+      explanation: {
+        선지: "① 김종직 제자 사초 / ② 현량과 신진 사림 비판 / ③ 연산군 어머니 문제 / ④ 명종 즉위 외척 다툼",
+        정오: "① X (무오사화) / ② X (기묘사화) / ③ X (갑자사화) / ④ O (정답)",
+        생각: "모든 사화가 훈구파와 사림파의 사상·정치적 대립만으로 일어났다고 오해하기 쉽습니다.",
+        바로잡기: "을사사화는 예외적으로 왕실 외척 세력인 대윤(윤임)과 소윤(윤원형)의 권력 다툼 속에서 사림이 얽혀 피해를 입은 사건입니다."
+      }
+    }
+  ];
+
+  let selectedName = null;
+  let selectedDesc = null;
+  let matchedCount = 0;
+  
+  let currentQuizIndex = 0;
+  let userScore = 0;
+  let wrongConcepts = [];
+
+  function updateProgress(percent) {
+    document.getElementById('progressFill').style.width = percent + '%';
+  }
+
+  function switchScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+  }
+
+  // --- Matching Game Logic ---
+  function startMatchingGame() {
+    switchScreen('screenMatching');
+    updateProgress(20);
+    renderMatchingItems();
+  }
+
+  function shuffle(array) {
+    return array.sort(() => Math.random() - 0.5);
+  }
+
+  let shuffledNames = shuffle([...matchData]);
+  let shuffledDescs = shuffle([...matchData]);
+
+  function renderMatchingItems() {
+    const nameContainer = document.getElementById('matchNames');
+    const descContainer = document.getElementById('matchDescs');
+    nameContainer.innerHTML = '';
+    descContainer.innerHTML = '';
+
+    shuffledNames.forEach(item => {
+      const div = document.createElement('div');
+      div.className = `match-item ${item.matched ? 'matched' : ''}`;
+      div.innerText = item.name;
+      div.dataset.id = item.id;
+      if (!item.matched) {
+        div.onclick = () => selectName(item.id, div);
+      }
+      nameContainer.appendChild(div);
+    });
+
+    shuffledDescs.forEach(item => {
+      const div = document.createElement('div');
+      div.className = `match-item ${item.matched ? 'matched' : ''}`;
+      div.innerText = item.desc;
+      div.dataset.id = item.id;
+      if (!item.matched) {
+        div.onclick = () => selectDesc(item.id, div);
+      }
+      descContainer.appendChild(div);
+    });
+  }
+
+  function selectName(id, el) {
+    if (el.classList.contains('matched')) return;
+    document.querySelectorAll('#matchNames .match-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedName = id;
+    checkMatch();
+  }
+
+  function selectDesc(id, el) {
+    if (el.classList.contains('matched')) return;
+    document.querySelectorAll('#matchDescs .match-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedDesc = id;
+    checkMatch();
+  }
+
+  function checkMatch() {
+    if (selectedName !== null && selectedDesc !== null) {
+      if (selectedName === selectedDesc) {
+        // Correct match
+        matchData.find(i => i.id === selectedName).matched = true;
+        shuffledNames.find(i => i.id === selectedName).matched = true;
+        shuffledDescs.find(i => i.id === selectedDesc).matched = true;
+        matchedCount++;
+
+        selectedName = null;
+        selectedDesc = null;
+        renderMatchingItems();
+
+        if (matchedCount === matchData.length) {
+          document.getElementById('matchNextBtn').style.display = 'block';
+        }
+      } else {
+        // Incorrect match feedback animation or reset
+        setTimeout(() => {
+          document.querySelectorAll('.match-item').forEach(i => i.classList.remove('selected'));
+          selectedName = null;
+          selectedDesc = null;
+        }, 400);
+      }
+    }
+  }
+
+  // --- Quiz Logic ---
+  function startQuizStage() {
+    switchScreen('screenQuiz');
+    updateProgress(40);
+    renderQuiz();
+  }
+
+  function renderQuiz() {
+    const q = quizData[currentQuizIndex];
+    const container = document.getElementById('quizContainer');
+    
+    let html = `
+      <div class="quiz-question">${q.question}</div>
+      <div class="options-list">
+    `;
+    
+    q.options.forEach((opt, idx) => {
+      html += `<button class="option-btn" onclick="handleAnswer(${idx})">${String.fromCharCode(65 + idx)}. ${opt}</button>`;
+    });
+    
+    html += `</div><div id="quizExplanationArea"></div>`;
+    container.innerHTML = html;
+  }
+
+  function handleAnswer(selectedIndex) {
+    const q = quizData[currentQuizIndex];
+    const optionBtns = document.querySelectorAll('.option-btn');
+    
+    // Disable all options after selection
+    optionBtns.forEach((btn, idx) => {
+      btn.disabled = true;
+      if (idx === q.correct) {
+        btn.classList.add('correct');
+      } else if (idx === selectedIndex) {
+        btn.classList.add('incorrect');
+      }
+    });
+
+    const isCorrect = (selectedIndex === q.correct);
+    if (isCorrect) {
+      userScore += 25;
+    } else {
+      wrongConcepts.push(q.conceptTag);
+    }
+
+    // Render Explanation Table
+    const expArea = document.getElementById('quizExplanationArea');
+    expArea.innerHTML = `
+      <div class="explanation-box">
+        <h4><i class="fa-solid fa-circle-info" style="color:${isCorrect ? '#22c55e' : '#ef4444'}"></i> ${isCorrect ? '정답입니다! 🎉' : '아쉽네요, 오개념을 바로 잡아볼까요?'}</h4>
+        <table class="exp-table">
+          <tr><th>선지 구성</th><td>${q.explanation.선지}</td></tr>
+          <tr><th>정오 판정</th><td>${q.explanation.정오}</td></tr>
+          <tr><th>내 생각</th><td>${q.explanation.생각}</td></tr>
+          <tr><th>바로잡기</th><td><b>${q.explanation.바로잡기}</b></td></tr>
+        </table>
+        <button class="btn" onclick="nextQuizStep()">${currentQuizIndex < quizData.length - 1 ? '다음 문제로 ➡️' : '결과 확인하기 🏆'}</button>
+      </div>
+    `;
+  }
+
+  function nextQuizStep() {
+    currentQuizIndex++;
+    updateProgress(40 + (currentQuizIndex / quizData.length) * 60);
+    if (currentQuizIndex < quizData.length) {
+      renderQuiz();
+    } else {
+      showResult();
+    }
+  }
+
+  function showResult() {
+    switchScreen('screenResult');
+    document.getElementById('finalScoreDisplay').innerText = `총점: ${userScore}점 / 100점`;
+
+    const wrongListContainer = document.getElementById('wrongConceptList');
+    wrongListContainer.innerHTML = '';
+
+    if (wrongConcepts.length === 0) {
+      const li = document.createElement('li');
+      li.innerText = "틀린 문항이 없습니다! 완벽하게 사화 개념을 마스터하셨네요! 👏";
+      wrongListContainer.appendChild(li);
+    } else {
+      // Unique wrong concepts
+      const uniqueWrong = [...new Set(wrongConcepts)];
+      uniqueWrong.forEach(concept => {
+        const li = document.createElement('li');
+        li.innerText = `• 취약한 개념 유형: [${concept}] - 해당 사화의 원인과 결과를 교과서 본문과 대조하며 다시 확인해보세요!`;
+        wrongListContainer.appendChild(li);
+      });
+    }
+  }
+</script>
+
+</body>
+</html>
+```eof
